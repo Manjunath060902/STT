@@ -56,9 +56,11 @@ def download_public_key(username):
 
 @app.route('/file-directory/retrieve/file/<filename>')
 def download_file(filename):
-	filepath = UPLOAD_FOLDER+filename
+	filepath = os.path.join(UPLOAD_FOLDER, filename)
+	print(filepath)
 	if(os.path.isfile(filepath)):
-		return send_file(filepath, download_name='fileMessage-thrainSecurity.txt',as_attachment=True)
+		print(filepath)
+		return send_file(filepath, download_name='fileMessage-thrainSecurity.txt', as_attachment=True)
 	else:
 		return render_template('file-list.html',msg='An issue encountered, our team is working on that')
 
@@ -165,5 +167,5 @@ def register_user():
 
 	
 if __name__ == '__main__':
-	#app.run(host="0.0.0.0", port=80)
-	app.run()
+	app.run(host="0.0.0.0", port=80)
+	# app.run(debug=True)
