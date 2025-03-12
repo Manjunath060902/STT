@@ -29,11 +29,19 @@ def post_upload_redirect():
 def call_page_register_user():
 	return render_template('register.html')
 
-@app.route('/home')
-def back_home():
-	return render_template('index.html')
+@app.route('/', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username == 'admin' and password == '1234':
+            return redirect(url_for('index'))
+        else:
+            error = 'Invalid Credentials'
+    return render_template('home.html', error=error)
 
-@app.route('/')
+@app.route('/index')
 def index():
 	return render_template('index.html')
 
