@@ -18,14 +18,13 @@ key_length = 600
 --------------------------------------------------------
 '''
 def generate_private_key(length):
-		
 	_rand = 0
 	_bytes = length // 8 + 8
 	#Generate a random private key such that it's less than the prime number
 	while (_rand.bit_length() < length):
-		#TODO: Can use Crypto library hash functions
+		# TODO: Can use Crypto library hash functions
 		hex_key = binascii.b2a_hex(os.urandom(_bytes))
-		#Convert to denary format
+		# Convert to denary format
 		_rand = int(hex_key.hex(), 16)
 	#Update object
 	private_key = _rand
@@ -38,11 +37,11 @@ def generate_public_key(private_key):
 
 #Secret key = public key ^ private key % q
 def generate_secret(private_key, public_key):
-	#Formula
-	secret = pow(long(public_key), long(private_key), prime)
+	#Formula 
+	secret = pow(int(public_key), int(private_key), prime)
 	try:
 		secret_bytes = secret.to_bytes(
-			shared_secret.bit_length() // 8 + 1, byteorder="big")
+			secret.bit_length() // 8 + 1, byteorder="big")
 	except AttributeError:
 		secret_bytes = str(secret)
 	#Generate hash key using SHA256 

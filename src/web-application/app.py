@@ -5,6 +5,8 @@ from werkzeug.utils import secure_filename
 import DH
 import pickle
 import random
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
 
 UPLOAD_FOLDER = './media/text-files/'
 UPLOAD_KEY = './media/public-keys/'
@@ -68,7 +70,7 @@ def download_file(filename):
 	print(filepath)
 	if(os.path.isfile(filepath)):
 		print(filepath)
-		return send_file(filepath, download_name='fileMessage-thrainSecurity.txt', as_attachment=True)
+		return send_file(filepath, download_name=f'fileMessage-thrainSecurity_{filename}.txt', as_attachment=True)
 	else:
 		return render_template('file-list.html',msg='An issue encountered, our team is working on that')
 
@@ -119,8 +121,27 @@ def upload_file():
 			flash('No selected file')
 			return 'NO FILE SELECTED'
 		if file:
+			# Read raw data
+			plaintext = file.read()
 			filename = secure_filename(file.filename)
-			file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+			key_length = 600 
+   
+			# --- Diffie-Hellman Key Exchange ---
+			private_key = DH.generate_private_key(key_length)
+			public_key = DH.generate_public_key(private_key)
+			
+			# For demo: we use our own public key as peer's public key
+			shared_secret = DH.generate_secret(private_key, public_key)
+
+			# --- AES Encryption ---
+			aes_key = bytes.fromhex(shared_secret)[:32]  # Use 256-bit key
+			iv = os.urandom(16)
+			cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+			ciphertext = iv + cipher.encrypt(pad(plaintext, AES.block_size))
+
+			# --- Save encrypted file ---
+			with open(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'wb') as f:
+				f.write(ciphertext)
 			return post_upload_redirect()
 		return 'Invalid File Format !'
 
